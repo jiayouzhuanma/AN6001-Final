@@ -46,6 +46,12 @@ def genAI_result():
 
     return(render_template("genAI_result.html", r = r.candidates[0].content.parts[0].text))
 
+
+@app.route("/paynow",methods=["GET","POST"])
+def paynow():
+    return(render_template("paynow.html"))
+
+
 if __name__ == "__main__":
     app.run()
 
