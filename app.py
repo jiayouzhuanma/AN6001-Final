@@ -7,7 +7,7 @@ import google.generativeai as genai
 import os
 
 # 读取 GitHub Secrets（Repository Secret）
-api = os.getenv("makersuite")
+api = os.getenv("MAKERSUITE")
 
 # 确保 Secret 已正确加载
 if api:
