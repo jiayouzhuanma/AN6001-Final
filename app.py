@@ -6,7 +6,17 @@ import textblob
 import google.generativeai as genai
 import os
 
+# 读取 GitHub Secrets（Repository Secret）
 api = os.getenv("makersuite")
+
+# 确保 Secret 已正确加载
+if api:
+    print("Successfully retrieved API Key.")
+else:
+    print("Error: API Key is missing!")
+
+# api = 'AIzaSyBjaVO0GvzUuhN8X6n2nK-zR6NtwCjiQJU'
+
 genai.configure(api_key=api)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
