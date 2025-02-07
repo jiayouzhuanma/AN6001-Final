@@ -1,4 +1,5 @@
-flask
-gunicorn
-textblob
+Flask
+flask-cors
 google-generativeai
+pymongo
+vaderSentiment

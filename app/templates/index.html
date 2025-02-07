@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能客服</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <h2>银行智能客服</h2>
+        <div class="chat-box" id="chatBox"></div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="请输入您的问题..." />
+            <button onclick="sendMessage()">发送</button>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            let inputBox = document.getElementById("userInput");
+            let chatBox = document.getElementById("chatBox");
+            let userMessage = inputBox.value.trim();
+
+            if (!userMessage) return;
+
+            chatBox.innerHTML += `<div><strong>您:</strong> ${userMessage}</div>`;
+
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMessage }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                chatBox.innerHTML += `<div><strong>客服:</strong> ${data.response}</div>`;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+
+            inputBox.value = "";
+        }
+    </script>
+</body>
+</html>
