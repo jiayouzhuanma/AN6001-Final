@@ -1,0 +1,23 @@
+name: Run Python Script with Secrets
+
+on: [push]  # 当 push 代码时触发
+
+jobs:
+  run-python:
+    runs-on: ubuntu-latest  # 在 GitHub 的 Ubuntu 服务器上运行
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3  # 获取代码
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # 选择 Python 版本
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt  # 如果有依赖文件
+
+      - name: Run Python script with secret
+        env:
+          MAKERSUITE: ${{ secrets.MAKERSUITE }}  # 传递 Secret
+        run: python app.py  # 运行 Python 脚本
