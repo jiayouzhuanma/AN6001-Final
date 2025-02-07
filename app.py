@@ -15,8 +15,6 @@ if api:
 else:
     print("Error: API Key is missing!")
 
-# api = 'AIzaSyBjaVO0GvzUuhN8X6n2nK-zR6NtwCjiQJU'
-
 genai.configure(api_key=api)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
