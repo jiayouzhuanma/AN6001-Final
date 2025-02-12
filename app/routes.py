@@ -3,23 +3,31 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import google.generativeai as genai
 import os
+from datetime import datetime
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-# 初始化 Flask 应用
+# Initialize Flask
 app = Flask(__name__)
-CORS(app)  # 允许跨域访问
+CORS(app)  # Enable CORS
 
-# 配置 SQLite 数据库
+# Configure SQLite database
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///chatbot.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# 初始化数据库
+# Initialize database
 db = SQLAlchemy(app)
 
-# 配置 Gemini API
-genai.configure(api_key=os.getenv("MAKERSUITE"))
+# Configure Gemini API
+genai.configure(api_key=os.getenv("MAKERSUITE"))  # Ensure the API key is set in environment variables
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# 定义聊天记录数据表
+# Initialize sentiment analysis tool
+analyzer = SentimentIntensityAnalyzer()
+
+# Keywords indicating a user request for human support
+TRANSFER_KEYWORDS = ["human support", "talk to an agent", "live agent", "customer service", "speak to a representative"]
+
+# Define the conversation database model
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_message = db.Column(db.Text, nullable=False)
@@ -27,20 +35,28 @@ class Conversation(db.Model):
 
 @app.route("/")
 def index():
-    """返回前端 HTML 页面"""
+    """Serve the frontend HTML page."""
     return render_template("index.html")
 
 @app.route("/chat", methods=["POST"])
 def chat():
-    """处理用户聊天请求"""
+    """Handle user chat requests."""
     data = request.json
-    user_message = data.get("message", "")
+    user_message = data.get("message", "").lower()  # Convert to lowercase for keyword matching
 
-    # 通过 Gemini API 获取 AI 回复
+    # Perform sentiment analysis
+    sentiment_score = analyzer.polarity_scores(user_message)["compound"]
+
+    # Generate AI response using Gemini API
     response = model.generate_content(user_message)
-    ai_reply = response.text if response else "抱歉，我无法理解你的问题。"
+    ai_reply = response.text if response else "Sorry, I couldn't understand your message."
 
-    # 记录对话数据到 SQLite
+
+    # **Check if human support is needed**
+    if sentiment_score < -0.5 or any(keyword in user_message for keyword in TRANSFER_KEYWORDS):
+        ai_reply = "💬 It looks like you may need assistance from a human agent.<br>⏰ Our customer support is available from 9:00 AM to 6:00 PM.<br>You can contact us at (65)12345678"
+
+    # Store the conversation in SQLite
     new_conversation = Conversation(user_message=user_message, bot_response=ai_reply)
     db.session.add(new_conversation)
     db.session.commit()
@@ -48,7 +64,7 @@ def chat():
     return jsonify({"response": ai_reply})
 
 if __name__ == "__main__":
-    # 创建数据库（如果不存在）
+    # Create database if it does not exist
     with app.app_context():
         db.create_all()
 
