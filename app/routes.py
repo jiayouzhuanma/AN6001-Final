@@ -33,10 +33,10 @@ class Conversation(db.Model):
     user_message = db.Column(db.Text, nullable=False)
     bot_response = db.Column(db.Text, nullable=False)
 
-@app.route("/")
-def index():
+@app.route("/ai")
+def chatbot():
     """Serve the frontend HTML page."""
-    return render_template("index.html")
+    return render_template("chatbot.html")
 
 @app.route("/chat", methods=["POST"])
 def chat():
